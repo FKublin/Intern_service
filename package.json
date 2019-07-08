@@ -1,0 +1,23 @@
+{
+  "name": "service",
+  "version": "1.0.0",
+  "description": "First Electron app",
+  "main": "main.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "electron": "^5.0.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "electron .",
+    "start": "electron ."
+  },
+  "keywords": [
+    "electron",
+    "internship"
+  ],
+  "author": "Filip Kublin",
+  "license": "ISC"
+}
