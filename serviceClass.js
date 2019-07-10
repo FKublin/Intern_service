@@ -2,7 +2,8 @@ const {ServiceStatus} = require('./symbolConstants')
 const assert = require('assert')
 
 class serviceClass {
-    constructor(config){
+    constructor(){
+
         this._status = ServiceStatus.STARTED
         this.handlers = []
     }
@@ -26,17 +27,24 @@ class serviceClass {
         return true
     }
 
+    errorHandler(error)
+    {
+        console.log(error)
+    }
+
     receive(data){
+        assert(typeof data === 'object' &&  data !== null && typeof data !== 'function', 'Data is not an object')
         for (let fun of this.handlers){
             try
             {
                 fun(data)    
             }
-            catch
+            catch (e)
             {
-                throw('Unable to complete function')
+                this.errorHandler(e)
             }
         }
+        return true
     }
     
 }
