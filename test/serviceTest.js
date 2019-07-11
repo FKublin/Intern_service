@@ -50,16 +50,17 @@ describe('Service class', ()=>{
 
     it('receive runs functions provided by handlers', ()=>{
         const instance = new ServiceClass()
-        function handler1(){}
+        function handler1(input){console.log(input)}
         function handler2(){
             console.log('test')
             throw(new Error('Exception'))
         }
-        function handler3(){}
+        function handler3(input){console.log(input)}
         instance.subscribe(handler1)
         instance.subscribe(handler2)
         instance.subscribe(handler3)
-        assert.isTrue(instance.receive({}), 'fuckup')
+        const testObject = {text: 'testMSG'}
+        assert.isTrue(instance.receive(testObject), 'fuckup')
 
     })
 })

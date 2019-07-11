@@ -3,7 +3,6 @@ const assert = require('assert')
 
 class serviceClass {
     constructor(){
-
         this._status = ServiceStatus.STARTED
         this.handlers = []
     }
