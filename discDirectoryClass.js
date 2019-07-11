@@ -1,5 +1,6 @@
 const {ServiceClass} = require('./serviceClass')
 const fs = require('fs')
+const chokidar = require('chokidar')
 
 class discDirectory extends ServiceClass{
 
@@ -7,31 +8,67 @@ class discDirectory extends ServiceClass{
         super()
         this.path = config
         this.content = new Map()
+        this.send(this.path)
+        this.watchers = []
+        var testVar = 'receive is called'
+        this.getter = ()=> testVar
     }
 
-    send(path){
-        this.path = path
-        if(this.content.has(path))
-        {
-            return this.path
+    send(newPath){
+        
+        this.path = newPath
+        if(this.content.has(newPath))
+        {     
+            return newPath
         }
         else
         {
-            fs.readdir(path, options.withFileTypes = true, receive(err, files))
+            
+            
+            const options = {withFileTypes: true}
+            fs.readdir(this.path, options, (err, fileArray) =>{
+                
+                this.receive(fileArray)
+            })
             return true
         }
-
     }
 
-    receive(err, files){
+    receive(files){
+        console.log(this.getter())
+        const watcher = chokidar.watch(this.path)
+        
         const map = new Map()
-        files.forEach(file =>{
-            map.set(file.name, file)
-        })
-        this.content.set(this.path, map)
-        super.receive(this.content)
+        try{
+            for(let file of files){
+                map.set(file.name, file)
+            }
+            watcher.on('add', changedPath=>{
+                this.content.set(changedPath, {map, watcher})
+            })
+            watcher.on('change', changedPath=>{
+                this.content.set(changedPath, {map, watcher})
+            })
+            watcher.on('unlink', changedPath=>{
+                this.content.delete(changedPath)
+                watcher.close()
+            })
+            this.content.set(this.path, {map, watcher})
+
+            super.receive(this.content)
+        
+        
+        }
+        catch(e)
+        {
+            console.log(e)
+        }
     }
 
+    
+    
 }
 
-exports.disc = serviceClass
+
+
+exports.DiscDirectory = discDirectory
