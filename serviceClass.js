@@ -17,11 +17,11 @@ class serviceClass {
     }
 
     subscribe(handler){
-        assert(typeof handler === 'function', 'Handler is not a function')
+        assert(typeof handler === 'function', 'Handler must be a function')
         this.handlers.push(handler)
     }
 
-    send(data){
+    ask(data){
         assert(typeof data === 'object' &&  data !== null && typeof data !== 'function', 'Data is not an object')
         return true
     }
@@ -31,7 +31,7 @@ class serviceClass {
         console.log(error)
     }
 
-    receive(data){
+    respond(data){
         assert(typeof data === 'object' &&  data !== null && typeof data !== 'function', 'Data is not an object')
         for (let fun of this.handlers){
             try

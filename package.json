@@ -11,7 +11,9 @@
     "chokidar": "^3.0.2",
     "electron": "^5.0.6"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mock-fs": "^4.10.1"
+  },
   "scripts": {
     "test": "electron .",
     "start": "electron ."
