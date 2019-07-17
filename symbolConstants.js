@@ -4,3 +4,8 @@ exports.ServiceStatus = {
     ERROR : Symbol(),
     STOPPED : Symbol()
 }
+
+exports.ActionSymbols = {
+    LOAD : Symbol(),
+    UNLOAD : Symbol()
+}
