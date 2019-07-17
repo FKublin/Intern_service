@@ -1,6 +1,8 @@
 const {ServiceClass} = require('./serviceClass')
 const fs = require('fs')
 const chokidar = require('chokidar')
+const {ServiceStatus} = require('./symbolConstants')
+const {ActionSymbols} = require('./symbolConstants')
 
 class discDirectory extends ServiceClass{
 
@@ -8,41 +10,57 @@ class discDirectory extends ServiceClass{
         super()
         this.path = config
         this.content = new Map()
-        this.ask(this.path)
+        this.ask({action: ActionSymbols.LOAD, newPath : config})
         this.watchers = []
         
     }
 
-    ask(newPath){
-        
-        this.path = newPath
-        if(this.content.has(newPath))
-        {     
-            return newPath
-        }
-        else
-        {
+    ask({action, newPath}){
 
-            const options = {withFileTypes: true}
-            fs.readdir(this.path, options, (err, fileArray) =>{
+        switch(action){
+            case ActionSymbols.LOAD:{
+                this.path = newPath
+                if(this.content.has(newPath))
+                {     
+                    return newPath
+                }
+                else
+                {
+        
+                    const options = {withFileTypes: true}
+                    fs.readdir(this.path, options, (err, fileArray) =>{
+                        
+                        this.respond(fileArray)
+                    })
+                    return true
+                }
                 
-                this.respond(fileArray)
-            })
-            return true
+            }
+            
+            case ActionSymbols.UNLOAD : {
+                this.path = newPath
+                // const clearer = this.content.get(newPath)
+                // clearer.watcher.close()
+
+                this.content.get(this.path).watcher.close()
+
+                this.content.delete(this.path)
+
+                return true
+            } 
         }
+        
     }
 
     respond(files){
-        
-        
-        console.log(`Created a watcher for ${this.path}`)
-        
+  
         const map = new Map()
         try{
             for(let file of files){
                 map.set(file.name, file)
             }
             const watcher = chokidar.watch(this.path)
+            console.log(`Created a watcher for ${this.path}`)
             watcher.on('add', changedPath=>{
                 console.log(`${changedPath} has been added`)
                 this.content.set(changedPath, {map, watcher})
@@ -62,9 +80,7 @@ class discDirectory extends ServiceClass{
             this.content.set(this.path, {map, watcher})
 
             super.respond(this.content)
-            
-        
-        
+
         }
         catch(e)
         {
