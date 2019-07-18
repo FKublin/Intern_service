@@ -10,11 +10,11 @@ describe('Disc Directory', ()=>{
         function testFun(value){console.log(value)}
         const instance = new DiscDirectory(testDir)
         instance.subscribe(testFun)
-        const testObject = {action : ActionSymbols.LOAD, newPath : testDir}
+        
 
+        instance.ask({action : ActionSymbols.LOAD, newPath : testDir}).then((result) =>{assert.isTrue(result, 'ask to return true')})
         
-        
-        assert.isTrue(instance.ask({action : ActionSymbols.LOAD, newPath : testDir}), 'ask to return true')
+        // assert.isTrue(result, 'ask to return true')
     })
 
     it('ask checks if path already exists', ()=>{
@@ -23,8 +23,8 @@ describe('Disc Directory', ()=>{
         instance.content.set('key', 'value')
         function testFun1(value){console.log(value)}
         instance.subscribe(testFun1)
+        instance.ask({action: ActionSymbols.LOAD, newPath : 'key'}).then((result)=>{assert.equal(result, 'key', 'ask failed to check')})
         
-        assert.equal(instance.ask({action: ActionSymbols.LOAD, newPath : 'key'}), 'key', 'ask failed to check')
     })
 
     it('respond responds to changes in observed files', ()=>{
@@ -53,13 +53,9 @@ describe('Disc Directory', ()=>{
         const instance = new DiscDirectory(testDir)
         function testFun1(value){console.log(value)}
         instance.subscribe(testFun1)
-        setTimeout(()=>{
-            instance.ask({action : ActionSymbols.UNLOAD, newPath : testDir})
-        }, 1000)
-            
-        setTimeout(()=>{
-            assert.isEmpty(instance.content.get(testDir), 'UNLOAD failed to empty')
-        }, 3000)
+        
+        instance.ask({action : ActionSymbols.UNLOAD, newPath : testDir}).then(()=>assert.isEmpty(instance.content.get(testDir), 'UNLOAD failed to empty'))
+        
 
     })
 })
