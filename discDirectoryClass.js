@@ -8,70 +8,63 @@ class discDirectory extends ServiceClass{
 
     constructor(config){
         super()
-        this.path = config
         this.content = new Map()
-        this.ask({action: ActionSymbols.LOAD, newPath : config})
-        this.watchers = []
-        this.askAsync = null
+        //this.askAsync(ActionSymbols.LOAD, {newPath : config})
         
+    
     }
 
 
-    ask({action, newPath}){
+    async askAsync(action, {newPath}){
 
-        return new Promise(async (resolve, reject) =>{
-            switch(action){
-                case ActionSymbols.LOAD:{
-                    this.path = newPath
-                    if(this.content.has(newPath))
-                    {     
-                        resolve(newPath)
-                    }
-                    else
-                    {
-            
-                        const options = {withFileTypes: true}
-                        fs.readdir(this.path, options, (err, fileArray) =>{
-                            
-                            this.respond(fileArray)
-                        })
-                        resolve(true)
-                    }
-                    
-                }
-                
-                case ActionSymbols.UNLOAD : {
-                    this.path = newPath
-                    // const clearer = this.content.get(newPath)
-                    // clearer.watcher.close()
-                    const closeWatchers = new Promise((resolve, reject)=>{
-                        this.content.get(this.path).watcher.close()
-                        resolve(true)
+
+        switch(action){
+            case ActionSymbols.LOAD : {
+
+                if(this.content.has(newPath)) {   
+                    return new Promise((resolve, reject) => {
+                        resolve(this.content.get(newPath))
                     })
-
-                    closeWatchers.then(this.content.delete(this.path))
-                    
-
-                    resolve(true)
-                } 
+                }
+                else{
+                    return new Promise((resolve, reject) => {
+                        const options = {withFileTypes: true}
+                        fs.readdir(newPath, options, (err, fileArray) => {
+                            this.respond(fileArray, newPath)
+                            resolve(true)
+                        })
+                    })
+                }
             }
-            
-        })
+    
+            case ActionSymbols.UNLOAD : {
+
+                return new Promise((resolve, reject) => {
+                    try{
+                        this.content.delete(newPath)
+                        resolve(true)
+                    }
+                    catch(err){
+                        reject(err)
+                    }
+
+                })
+
+            }
+        }
+
     }
-    
-
-    
 
 
-    respond(files){
+    respond(files, newPath){
   
         const map = new Map()
         try{
             for(let file of files){
                 map.set(file.name, file)
             }
-            const watcher = chokidar.watch(this.path)
-            console.log(`Created a watcher for ${this.path}`)
+            const watcher = chokidar.watch(newPath)
+            console.log(`Created a watcher for ${newPath}`)
             watcher.on('add', changedPath=>{
                 console.log(`${changedPath} has been added`)
                 this.content.set(changedPath, {map, watcher})
@@ -88,7 +81,7 @@ class discDirectory extends ServiceClass{
                 console.log(`${changedPath} has been removed`)
                 watcher.close()
             })
-            this.content.set(this.path, {map, watcher})
+            this.content.set(newPath, {map, watcher})
 
             super.respond(this.content)
 
@@ -99,17 +92,79 @@ class discDirectory extends ServiceClass{
         }
     }
 
-    stop(){
+    async stop(){
 
         const stopWatchers = new Promise((resolve, reject)=>{
             for(let element of this.content.values()){
                 element.watcher.close()
             }
+            resolve(true)
         })
-        stopWatchers.then(()=>{this.content.clear()}).then(()=>{super.stop()})
-        
+        await stopWatchers
+        this.content.clear()
+        super.stop()
         
     }
+
+    contentFromJSON(newPath){
+        fs.readFile(newPath, (err, newContent) => {
+            if(err){
+                return err
+            }
+            try{
+                const JSONobject = JSON.parse(newContent)
+                for(JSONkey of Object.keys(JSONobject)){
+                    this.content.set(JSONkey, JSONobject[JSONkey])
+                }
+                
+            }
+            catch(err){
+                return err
+            }
+
+            
+        })
+
+    }
+
+    ask({action, newPath}){
+
+        return new Promise((resolve, reject) =>{
+           switch(action){
+               case ActionSymbols.LOAD:{
+                   if(this.content.has(newPath))
+                   {     
+                       resolve(newPath)
+                   }
+                   else
+                   {
+           
+                       const options = {withFileTypes: true}
+                       fs.readdir(newPath, options, (err, fileArray) =>{
+                           
+                           this.respond(fileArray)
+                       })
+                       resolve(true)
+                   }
+                   
+               }break
+               
+               case ActionSymbols.UNLOAD : {
+                   const closeWatchers = new Promise((resolve, reject)=>{
+                       this.content.get(newPath).watcher.close()
+                       resolve(true)
+                   })
+
+                   closeWatchers.then(this.content.delete(newPath))
+                   
+
+                   resolve(true)
+               } 
+           }
+           
+       })
+   }
+   
 
     
     

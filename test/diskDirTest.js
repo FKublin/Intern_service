@@ -32,18 +32,21 @@ describe('Disc Directory', ()=>{
         const instance = new DiscDirectory(testDir)
         function testFun1(value){console.log(value)}
         instance.subscribe(testFun1)
-        fs.writeFileSync('C:\\Users\\Filip\\Desktop\\testFolder\\newText.txt', '')
-        //instance.ask({action : ServiceStatus.LOAD, newPath : testDir})
+        const dir2 = 'C:\\Users\\Filip\\Desktop\\testFolder2'
+        instance.ask({action : ServiceStatus.LOAD, newPath : dir2}).then(() => {console.log('something')})
+
+
+        // fs.writeFileSync('C:\\Users\\Filip\\Desktop\\testFolder\\newText.txt', '')
 
           
-        setTimeout(() => {
-            fs.unlink('C:\\Users\\Filip\\Desktop\\testFolder\\newText.txt', (err)=>{console.log(err)})
-        }, 2000)
+        // setTimeout(() => {
+        //     fs.unlink('C:\\Users\\Filip\\Desktop\\testFolder\\newText.txt', (err)=>{console.log(err)})
+        // }, 2000)
 
-        setTimeout(()=>{
+        // setTimeout(()=>{
 
-            assert.isFalse(fs.existsSync('C:\\Users\\Filip\\Desktop\\testFolder\\newText.txt'), 'unlink failed')
-        }, 3000)
+        //     assert.isFalse(fs.existsSync('C:\\Users\\Filip\\Desktop\\testFolder\\newText.txt'), 'unlink failed')
+        // }, 3000)
         
 
     })
